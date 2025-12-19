@@ -4,7 +4,8 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
-axios.default.baseURL = backendUrl;
+axios.defaults.baseURL = backendUrl;
+
 
 export const AuthContext = createContext();
 
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     //check if user is authenticated and if so , set the user data and connect the socket
     const checkAuth = async () => {
         try {
-            const { data } = await axios.getItem("/api/auth/check");
+            const { data } = await axios.get("/api/auth/check");
             if (data.success) {
                 setAuthUser(data.user)
                 connectSocket(data.user)
@@ -62,15 +63,43 @@ export const AuthProvider = ({ children }) => {
 
     //logout function to handle user logout  and socket disconnection
 
-   const logout = async () =>{
-    localStorage.removeItem("token");
-    setToken(null);
-    setAuthUser(null);
-    setOnlineUsers([]);
-    axios.defaults.headers.common["token"] = null;
-    toast.success("Logged out successfully")
+
+
+
+
+    const logout = async () => {
+  localStorage.removeItem("token");
+  setToken(null);
+  setAuthUser(null);
+  setOnlineUsers([]);
+
+  axios.defaults.headers.common["token"] = null;
+
+  if (socket) {
     socket.disconnect();
-   }
+  }
+
+  toast.success("Logged out successfully");
+};
+
+
+
+
+
+
+
+
+
+
+//    const logout = async () =>{
+//     localStorage.removeItem("token");
+//     setToken(null);
+//     setAuthUser(null);
+//     setOnlineUsers([]);
+//     axios.defaults.headers.common["token"] = null;
+//     toast.success("Logged out successfully")
+//     socket.disconnect();
+//    }
 
 
 //update profile function to handle user profile updates
@@ -95,24 +124,52 @@ const updateProfile = async (body)=>{
 
     const connectSocket = (userData) => {
         if (!userData || socket?.connected) return;
-        const newsocket = io(backendUrl, {
+        const newSocket = io(backendUrl, {
             query: {
                 userId: userData._id,
             }
         });
-        newsocket.connect();
-        setsocket(newsocket);
+        newSocket.connect();
+        setSocket(newSocket);
 
-        newsocket.on("getOnlineUsers", (userIds) => {
+        newSocket.on("getOnlineUsers", (userIds) => {
             setOnlineUsers(userIds);
         })
     }
-    useEffect(() => {
-        if (token) {
-            axios.defaults.headers.common["token"] = token;
-        }
-        checkAuth();
-    }, [])
+
+
+
+
+useEffect(() => {
+  if (token) {
+    axios.defaults.headers.common["token"] = token;
+    checkAuth();
+  }
+}, [token]);
+
+
+
+
+
+
+
+
+
+
+    // useEffect(() => {
+    //     if (token) {
+    //         axios.defaults.headers.common["token"] = token;
+    //     }
+    //     checkAuth();
+    // }, [])
+
+
+
+
+
+
+
+
     const value = {
         axios,
         authUser,
