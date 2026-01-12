@@ -83,7 +83,7 @@ export const markMessageAsSeen = async (req,res) =>{
 
 export const sendMessage = async(req,res)=>{
     try{
-        const{text,image} = req.bpdy;
+        const{text,image} = req.body;
         const receiverId = req.params.id;
         const senderId = req.user._id;
 
